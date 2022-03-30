@@ -1,0 +1,36 @@
+{
+  "name": "Spark Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "spark",
+  "runServices": ["spark"],
+  "remoteEnv": {
+    "AWS_PROFILE": "cevo",
+    "PYTHONPATH": "/usr/lib/spark/python/lib/py4j-0.10.9-src.zip:/usr/lib/spark/python/"
+  },
+  "workspaceFolder": "/home/hadoop/repo",
+  "extensions": ["ms-python.python", "esbenp.prettier-vscode"],
+  "forwardPorts": [4040],
+  "settings": {
+    "terminal.integrated.profiles.linux": {
+      "bash": {
+        "path": "/bin/bash"
+      }
+    },
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "python.defaultInterpreterPath": "python3",
+    "python.testing.pytestEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "black",
+    "python.formatting.blackArgs": ["--line-length", "100"],
+    "[python]": {
+      "editor.tabSize": 4,
+      "editor.defaultFormatter": "ms-python.python"
+    }
+  }
+}

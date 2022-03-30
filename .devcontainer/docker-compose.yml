@@ -1,0 +1,106 @@
+version: "2"
+
+services:
+  spark:
+    image: emr-6.5.0:20211119
+    container_name: spark
+    command: /bin/bash -c "while sleep 1000; do :; done"
+    networks:
+      - spark
+    volumes:
+      - ${PWD}:/home/hadoop/repo
+      - ${HOME}/.aws:/home/hadoop/.aws
+  zookeeper:
+    image: bitnami/zookeeper:3.7.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - spark
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    networks:
+      - spark
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  kafka-ui:
+    image: provectuslabs/kafka-ui:0.3.3
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    networks:
+      - spark
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://registry:8080/apis/ccompat/v6
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+    depends_on:
+      - zookeeper
+      - kafka
+  kafka-connect:
+    image: bitnami/kafka:2.8.1
+    container_name: connect
+    command: >
+      /opt/bitnami/kafka/bin/connect-distributed.sh
+      /opt/bitnami/kafka/config/connect-distributed.properties
+    ports:
+      - "8083:8083"
+    networks:
+      - spark
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+    volumes:
+      - "./connect/local/src/debezium-connector-postgres:/opt/connectors/debezium-postgres"
+      - "./connect/local/src/confluent-s3/lib:/opt/connectors/confluent-s3"
+      - "./connect/local/src/voluble/lib:/opt/connectors/voluble"
+      - "./connect/local/config/connect-distributed.properties:/opt/bitnami/kafka/config/connect-distributed.properties"
+    depends_on:
+      - zookeeper
+      - kafka
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    command: ["postgres", "-c", "wal_level=logical"]
+    ports:
+      - 5432:5432
+    networks:
+      - spark
+    volumes:
+      - ./connect/data/sql:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=main
+      - POSTGRES_USER=master
+      - POSTGRES_PASSWORD=password
+  registry:
+    image: apicurio/apicurio-registry-sql:2.2.0.Final
+    container_name: registry
+    command: bash -c 'while !</dev/tcp/postgres/5432; do sleep 1; done; /usr/local/s2i/run'
+    ports:
+      - "9090:8080"
+    networks:
+      - spark
+    environment:
+      REGISTRY_DATASOURCE_URL: "jdbc:postgresql://postgres/main?currentSchema=registry"
+      REGISTRY_DATASOURCE_USERNAME: master
+      REGISTRY_DATASOURCE_PASSWORD: password
+    depends_on:
+      - zookeeper
+      - kafka
+      - postgres
+
+networks:
+  spark:
+    name: spark
