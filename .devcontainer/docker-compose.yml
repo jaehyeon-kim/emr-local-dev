@@ -63,10 +63,10 @@ services:
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
     volumes:
-      - "./connect/local/src/debezium-connector-postgres:/opt/connectors/debezium-postgres"
-      - "./connect/local/src/confluent-s3/lib:/opt/connectors/confluent-s3"
-      - "./connect/local/src/voluble/lib:/opt/connectors/voluble"
-      - "./connect/local/config/connect-distributed.properties:/opt/bitnami/kafka/config/connect-distributed.properties"
+      - "./connect/src/debezium-connector-postgres:/opt/connectors/debezium-postgres"
+      - "./connect/src/confluent-s3/lib:/opt/connectors/confluent-s3"
+      - "./connect/src/voluble/lib:/opt/connectors/voluble"
+      - "./connect/config/connect-distributed.properties:/opt/bitnami/kafka/config/connect-distributed.properties"
     depends_on:
       - zookeeper
       - kafka
@@ -79,7 +79,7 @@ services:
     networks:
       - spark
     volumes:
-      - ./connect/data/sql:/docker-entrypoint-initdb.d
+      - ./connect/sql:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_DB=main
       - POSTGRES_USER=master

@@ -2,7 +2,15 @@
   "name": "Spark Development",
   "dockerComposeFile": "docker-compose.yml",
   "service": "spark",
-  "runServices": ["spark"],
+  "runServices": [
+    "spark",
+    "zookeeper",
+    "kafka",
+    "kafka-ui"
+    // "kafka-connect",
+    // "postgres",
+    // "registry"
+  ],
   "remoteEnv": {
     "AWS_PROFILE": "cevo",
     "PYTHONPATH": "/usr/lib/spark/python/lib/py4j-0.10.9-src.zip:/usr/lib/spark/python/"
