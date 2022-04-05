@@ -1,22 +1,22 @@
-import sys
 from datetime import datetime
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import lit
+
+from utils import to_timestamp_df
 
 if __name__ == "__main__":
-    spark = SparkSession.builder.appName("Trip Data").enableHiveSupport().getOrCreate()
+    spark = SparkSession.builder.appName("Trip Data").getOrCreate()
 
     dbname = "tripdata"
     tblname = "ny_taxi"
     dest_path = "s3://emr-local-dev/tripdata/"
-    # src_path = "s3://nyc-tlc/trip data/yellow_tripdata_2020-04.csv"
     src_path = "s3://aws-data-analytics-workshops/shared_datasets/tripdata/"
+    # read csv
     ny_taxi = spark.read.option("inferSchema", "true").option("header", "true").csv(src_path)
-    ny_taxi = ny_taxi.withColumn("created_at", lit(datetime.now()))
+    ny_taxi = to_timestamp_df(ny_taxi, ["lpep_pickup_datetime", "lpep_dropoff_datetime"])
     ny_taxi.printSchema()
-
+    # write parquet
     ny_taxi.write.mode("overwrite").parquet(dest_path)
-
+    # create glue table
     ny_taxi.registerTempTable(tblname)
     spark.sql(f"CREATE DATABASE IF NOT EXISTS {dbname}")
     spark.sql(f"USE {dbname}")
