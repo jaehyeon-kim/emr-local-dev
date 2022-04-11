@@ -2,5 +2,6 @@ pytest
 pytest-cov
 black
 ipdb
+boto3
 python-dotenv
 ipykernel
