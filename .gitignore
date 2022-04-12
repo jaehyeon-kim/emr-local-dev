@@ -1,5 +1,7 @@
 .local
 .devcontainer/connect/src
+data/json
+.checkpoint
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
