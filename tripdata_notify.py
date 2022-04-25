@@ -43,7 +43,7 @@ if __name__ == "__main__":
         .load()
     )
 
-    target_df = ny_taxi.filter(col("total_amount") <= 0).select(
+    target_df = ny_taxi.filter(col("total_amount") < 0).select(
         col("record_id").alias("key"), to_json(struct("*")).alias("value")
     )
 

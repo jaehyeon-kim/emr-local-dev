@@ -32,4 +32,5 @@ def write_to_json(bucket_name: str, key_name: str, data_path: Path, recreate: bo
         )
 
 
-write_to_json(BUCKET_NAME, KEY_NAME, DATA_PATH, True)
+if __name__ == "__main__":
+    write_to_json(BUCKET_NAME, KEY_NAME, DATA_PATH, True)
